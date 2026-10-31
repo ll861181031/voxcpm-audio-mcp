@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 import shutil
 import subprocess
+import json
+from datetime import datetime, timezone
 import tempfile
 import time
 import urllib.request
@@ -130,18 +132,56 @@ def concat_wavs(
 
 
 def vram_free_mb(nvidia_smi: str = "nvidia-smi") -> int | None:
+    return vram_info(nvidia_smi)["free_mb"]
+
+
+def vram_info(nvidia_smi: str = "nvidia-smi") -> dict:
     try:
-        result = _run(
-            [
-                nvidia_smi,
-                "--query-gpu=memory.free",
-                "--format=csv,noheader,nounits",
-            ],
-            timeout=10,
-        )
-        return int(result.stdout.strip().splitlines()[0])
+        import pynvml
+
+        pynvml.nvmlInit()
+        try:
+            handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+            free_mb = int(pynvml.nvmlDeviceGetMemoryInfo(handle).free // 1024**2)
+            return {"free_mb": free_mb, "error": None, "path": "NVML"}
+        finally:
+            pynvml.nvmlShutdown()
     except Exception:
-        return None
+        pass
+
+    try:
+        import shutil
+        from pathlib import Path
+        import subprocess
+
+        executable = shutil.which(nvidia_smi) or nvidia_smi
+        if not Path(executable).is_file() and Path(r"C:\Windows\System32\nvidia-smi.exe").is_file():
+            executable = r"C:\Windows\System32\nvidia-smi.exe"
+        command = [
+            executable,
+            "--query-gpu=memory.free",
+            "--format=csv,noheader,nounits",
+        ]
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=10,
+            check=False,
+        )
+        if result.returncode != 0:
+            return {
+                "free_mb": None,
+                "error": f"nvidia-smi exited {result.returncode}: {result.stderr.strip()}",
+                "path": executable,
+            }
+        return {"free_mb": int(result.stdout.strip().splitlines()[0]), "error": None, "path": executable}
+    except Exception:
+        import traceback
+
+        return {"free_mb": None, "error": traceback.format_exc(), "path": nvidia_smi}
 
 
 def http_ready(url: str, timeout: float = 2.0) -> bool:
@@ -150,6 +190,18 @@ def http_ready(url: str, timeout: float = 2.0) -> bool:
             return True
     except Exception:
         return False
+
+
+def append_log(log_dir: Path, event: str, data: dict) -> None:
+    log_dir.mkdir(parents=True, exist_ok=True)
+    record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "event": event,
+        **data,
+    }
+    path = log_dir / "mcp.jsonl"
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n")
 
 
 def copy_result(source: str | Path, destination: Path) -> Path:

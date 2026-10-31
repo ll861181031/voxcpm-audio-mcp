@@ -24,6 +24,7 @@ class Settings:
     soulx_prompt_metadata: Path
     ffmpeg: Path
     output_dir: Path
+    log_dir: Path
     min_free_vram_mb: int
     request_timeout_s: int
     max_text_chars: int
@@ -73,6 +74,17 @@ class Settings:
             output_dir=_path(
                 "AUDIO_OUTPUT_DIR",
                 str(Path.home() / "Music" / "VoxCPM-MCP"),
+            ),
+            log_dir=_path(
+                "MCP_LOG_DIR",
+                str(
+                    Path(os.getenv("LOCALAPPDATA", str(Path.home() / "AppData" / "Local")))
+                    / "OpenAI"
+                    / "Codex"
+                    / "Plugins"
+                    / "voxcpm-audio-mcp"
+                    / "logs"
+                ),
             ),
             min_free_vram_mb=int(os.getenv("MIN_FREE_VRAM_MB", "6000")),
             request_timeout_s=int(os.getenv("REQUEST_TIMEOUT_S", "3600")),

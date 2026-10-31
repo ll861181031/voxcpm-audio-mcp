@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Literal
+from contextlib import contextmanager
 
 from mcp.server.mcpserver import MCPServer
 from pydantic import BaseModel, Field
 
-from .audio import vram_free_mb
+from .audio import append_log, vram_info
 from .backends import AudioBackendError, SoulXSingerBackend, VoxCPMBackend
 from .config import Settings
 
@@ -24,6 +25,18 @@ singing = SoulXSingerBackend(settings)
 mcp = MCPServer("VoxCPM Audio")
 
 
+@contextmanager
+def logged_call(name: str, payload: dict):
+    append_log(settings.log_dir, f"{name}.start", payload)
+    try:
+        yield
+    except Exception as exc:
+        append_log(settings.log_dir, f"{name}.error", {**payload, "error": type(exc).__name__, "message": str(exc)})
+        raise
+    else:
+        append_log(settings.log_dir, f"{name}.finish", payload)
+
+
 @mcp.tool(
     description="用本地 VoxCPM2 生成说话或情感旁白。返回音频文件路径。",
 )
@@ -39,16 +52,25 @@ def speak(
 ) -> dict:
     """Generate speech with VoxCPM2."""
     try:
-        return speech.speak(
-            text=text,
-            control_instruction=control_instruction,
-            reference_audio_path=reference_audio_path,
-            cfg_value=cfg_value,
-            inference_timesteps=inference_timesteps,
-            seed=seed,
-            output_format=output_format,
-            normalize_loudness=normalize_loudness,
-        )
+        with logged_call(
+            "speak",
+            {
+                "text_chars": len(text),
+                "cfg_value": cfg_value,
+                "inference_timesteps": inference_timesteps,
+                "output_format": output_format,
+            },
+        ):
+            return speech.speak(
+                text=text,
+                control_instruction=control_instruction,
+                reference_audio_path=reference_audio_path,
+                cfg_value=cfg_value,
+                inference_timesteps=inference_timesteps,
+                seed=seed,
+                output_format=output_format,
+                normalize_loudness=normalize_loudness,
+            )
     except (AudioBackendError, FileNotFoundError, ValueError) as exc:
         raise RuntimeError(str(exc)) from exc
 
@@ -67,15 +89,24 @@ def speak_segments(
 ) -> dict:
     """Generate segmented emotional narration with VoxCPM2."""
     try:
-        return speech.speak_segments(
-            segments=[segment.model_dump() for segment in segments],
-            reference_audio_path=reference_audio_path,
-            cfg_value=cfg_value,
-            inference_timesteps=inference_timesteps,
-            seed=seed,
-            output_format=output_format,
-            normalize_loudness=normalize_loudness,
-        )
+        with logged_call(
+            "speak_segments",
+            {
+                "segments": len(segments),
+                "cfg_value": cfg_value,
+                "inference_timesteps": inference_timesteps,
+                "output_format": output_format,
+            },
+        ):
+            return speech.speak_segments(
+                segments=[segment.model_dump() for segment in segments],
+                reference_audio_path=reference_audio_path,
+                cfg_value=cfg_value,
+                inference_timesteps=inference_timesteps,
+                seed=seed,
+                output_format=output_format,
+                normalize_loudness=normalize_loudness,
+            )
     except (AudioBackendError, FileNotFoundError, ValueError) as exc:
         raise RuntimeError(str(exc)) from exc
 
@@ -96,17 +127,27 @@ def sing_metadata(
 ) -> dict:
     """Generate singing from a SoulX-Singer metadata JSON file."""
     try:
-        return singing.sing_metadata(
-            target_metadata_path=target_metadata_path,
-            prompt_wav_path=prompt_wav_path,
-            prompt_metadata_path=prompt_metadata_path,
-            device=device,
-            control=control,
-            pitch_shift=pitch_shift,
-            auto_shift=auto_shift,
-            output_format=output_format,
-            normalize_loudness=normalize_loudness,
-        )
+        with logged_call(
+            "sing_metadata",
+            {
+                "target_metadata_path": target_metadata_path,
+                "device": device,
+                "control": control,
+                "pitch_shift": pitch_shift,
+                "output_format": output_format,
+            },
+        ):
+            return singing.sing_metadata(
+                target_metadata_path=target_metadata_path,
+                prompt_wav_path=prompt_wav_path,
+                prompt_metadata_path=prompt_metadata_path,
+                device=device,
+                control=control,
+                pitch_shift=pitch_shift,
+                auto_shift=auto_shift,
+                output_format=output_format,
+                normalize_loudness=normalize_loudness,
+            )
     except (AudioBackendError, FileNotFoundError, ValueError) as exc:
         raise RuntimeError(str(exc)) from exc
 
@@ -130,20 +171,29 @@ def sing_notes(
 ) -> dict:
     """Generate singing from phonemes, notes, and durations."""
     try:
-        return singing.sing_notes(
-            phonemes=phonemes,
-            note_pitches=note_pitches,
-            durations_ms=durations_ms,
-            text=text,
-            language=language,
-            prompt_wav_path=prompt_wav_path,
-            prompt_metadata_path=prompt_metadata_path,
-            device=device,
-            pitch_shift=pitch_shift,
-            auto_shift=auto_shift,
-            output_format=output_format,
-            normalize_loudness=normalize_loudness,
-        )
+        with logged_call(
+            "sing_notes",
+            {
+                "notes": len(note_pitches),
+                "device": device,
+                "pitch_shift": pitch_shift,
+                "output_format": output_format,
+            },
+        ):
+            return singing.sing_notes(
+                phonemes=phonemes,
+                note_pitches=note_pitches,
+                durations_ms=durations_ms,
+                text=text,
+                language=language,
+                prompt_wav_path=prompt_wav_path,
+                prompt_metadata_path=prompt_metadata_path,
+                device=device,
+                pitch_shift=pitch_shift,
+                auto_shift=auto_shift,
+                output_format=output_format,
+                normalize_loudness=normalize_loudness,
+            )
     except (AudioBackendError, FileNotFoundError, ValueError) as exc:
         raise RuntimeError(str(exc)) from exc
 
@@ -153,7 +203,7 @@ def sing_notes(
 )
 def health() -> dict:
     """Report local backend health."""
-    free_mb = vram_free_mb()
+    vram = vram_info()
     return {
         "voxcpm_url": settings.voxcpm_url,
         "voxcpm_ready": speech.ready(),
@@ -161,9 +211,12 @@ def health() -> dict:
         "soulx_home": str(settings.soulx_home),
         "soulx_model_exists": settings.soulx_model_path.is_file(),
         "ffmpeg_exists": settings.ffmpeg.is_file(),
-        "free_vram_mb": free_mb,
+        "free_vram_mb": vram["free_mb"],
+        "vram_source": vram["path"],
+        "vram_error": vram["error"],
         "min_free_vram_mb": settings.min_free_vram_mb,
         "output_dir": str(settings.output_dir),
+        "log_dir": str(settings.log_dir),
     }
 
 

@@ -1,0 +1,40 @@
+{
+  "mcpServers": {
+    "voxcpm-audio": {
+      "command": "./scripts/launch_mcp.cmd",
+      "cwd": ".",
+      "env_vars": [
+        "PATH",
+        "SystemRoot",
+        "SYSTEMDRIVE",
+        "COMSPEC",
+        "PATHEXT",
+        "TEMP",
+        "TMP",
+        "NUMBER_OF_PROCESSORS",
+        "PROCESSOR_ARCHITECTURE",
+        "USERPROFILE",
+        "LOCALAPPDATA",
+        "VOXCPM_HOME",
+        "VOXCPM_URL",
+        "VOXCPM_PYTHON",
+        "VOXCPM_START_SCRIPT",
+        "SOULX_HOME",
+        "SOULX_PYTHON",
+        "SOULX_MODEL_PATH",
+        "SOULX_CONFIG",
+        "SOULX_PHONESET",
+        "SOULX_PROMPT_WAV",
+        "SOULX_PROMPT_METADATA",
+        "FFMPEG",
+        "AUDIO_OUTPUT_DIR",
+        "MCP_LOG_DIR",
+        "MIN_FREE_VRAM_MB",
+        "REQUEST_TIMEOUT_S",
+        "MAX_TEXT_CHARS"
+      ],
+      "startup_timeout_sec": 300,
+      "tool_timeout_sec": 3600
+    }
+  }
+}

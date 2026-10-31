@@ -1,0 +1,39 @@
+{
+  "name": "voxcpm-audio-mcp",
+  "version": "0.2.0",
+  "description": "Local speech and singing synthesis with VoxCPM2 and SoulX-Singer.",
+  "author": {
+    "name": "ll861181031",
+    "url": "https://github.com/ll861181031"
+  },
+  "homepage": "https://github.com/ll861181031/voxcpm-audio-mcp",
+  "repository": "https://github.com/ll861181031/voxcpm-audio-mcp",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "tts",
+    "singing",
+    "voxcpm2",
+    "soulx-singer",
+    "audio"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "VoxCPM Audio",
+    "shortDescription": "Local speech and singing synthesis",
+    "longDescription": "Generate emotional speech with VoxCPM2 and exact-melody singing with SoulX-Singer through local MCP tools.",
+    "developerName": "ll861181031",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "websiteURL": "https://github.com/ll861181031/voxcpm-audio-mcp",
+    "privacyPolicyURL": "https://github.com/ll861181031/voxcpm-audio-mcp#privacy",
+    "termsOfServiceURL": "https://github.com/ll861181031/voxcpm-audio-mcp#license",
+    "defaultPrompt": [
+      "Generate an emotional Chinese narration with VoxCPM2.",
+      "Sing two lines using exact MIDI notes with SoulX-Singer."
+    ],
+    "brandColor": "#111827",
+    "screenshots": []
+  }
+}

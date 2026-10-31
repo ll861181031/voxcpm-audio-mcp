@@ -12,6 +12,46 @@
 
 服务只返回本地音频文件路径，不包含模型权重。
 
+## Codex 插件
+
+本仓库同时是一个 Codex 插件包：
+
+```text
+.codex-plugin/plugin.json   插件清单
+.mcp.json                   本地 MCP 启动配置
+skills/audio/SKILL.md       音频合成技能说明
+scripts/launch_mcp.cmd      MCP 启动器
+scripts/ensure_mcp.ps1      插件环境安装
+scripts/start_models.ps1    启动 VoxCPM2 并检查 SoulX-Singer
+scripts/stop_models.ps1     停止 VoxCPM2
+scripts/manage_cache.ps1    音频缓存统计和清理
+scripts/show_logs.ps1       查看 MCP JSONL 日志
+```
+
+插件会在 `%LOCALAPPDATA%\OpenAI\Codex\Plugins\voxcpm-audio-mcp` 创建独立虚拟环境、日志目录和缓存目录，不修改系统 Python。
+
+### 本地安装
+
+可以使用仓库中的 `examples/marketplace.json` 作为本地市场配置，或把该仓库作为本地插件目录添加到 Codex。插件安装后，MCP 会通过 `scripts/launch_mcp.cmd` 自动安装依赖并启动。
+
+也可以直接添加这个 GitHub 仓库作为插件市场：
+
+```powershell
+codex plugin marketplace add ll861181031/voxcpm-audio-mcp
+```
+
+### 常用维护脚本
+
+```powershell
+.\scripts\start_models.ps1
+.\scripts\stop_models.ps1
+.\scripts\manage_cache.ps1
+.\scripts\manage_cache.ps1 -Clean
+.\scripts\show_logs.ps1
+```
+
+`manage_cache.ps1` 默认只做预览；加 `-Clean` 才会删除超过保留期且超出保留数量的音频文件。
+
 ## 前置条件
 
 - Windows 10/11
@@ -148,6 +188,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\run.ps1
 - 参考音频和音色克隆仅用于本人声音或已获授权的声音。
 - 不包含模型权重，模型需由用户自行安装和确认许可证。
 - MCP 默认通过 stdio 运行，不开放网络端口。
+
+## 隐私
+
+- 不收集账号、联系方式或使用统计。
+- 不上传用户文本、参考音频或生成音频。
+- 日志只记录工具名称、参数摘要、输出路径和错误信息，不记录完整文本。
+- 所有模型和输出默认保存在本机。
+
+## 许可证
+
+MIT。模型权重和第三方模型许可证由各自项目决定，本仓库不包含这些权重。
 
 ## 开发与测试
 

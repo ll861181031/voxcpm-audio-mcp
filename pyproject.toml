@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "voxcpm-audio-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP server for local VoxCPM2 speech and SoulX-Singer singing synthesis"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -15,6 +15,7 @@ dependencies = [
     "soundfile>=0.13",
     "numpy>=1.26,<3",
     "pydantic>=2",
+    "nvidia-ml-py>=13.615",
 ]
 
 [project.optional-dependencies]
