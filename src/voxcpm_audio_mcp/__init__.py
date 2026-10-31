@@ -1,0 +1,1 @@
+"""VoxCPM Audio MCP server."""

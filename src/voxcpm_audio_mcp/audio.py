@@ -1,0 +1,159 @@
+from __future__ import annotations
+
+import re
+import shutil
+import subprocess
+import tempfile
+import time
+import urllib.request
+from pathlib import Path
+
+
+def validate_file(path: str | Path, suffixes: set[str] | None = None) -> Path:
+    value = Path(path).expanduser().resolve()
+    if not value.is_file():
+        raise FileNotFoundError(f"File not found: {value}")
+    if suffixes and value.suffix.lower() not in suffixes:
+        allowed = ", ".join(sorted(suffixes))
+        raise ValueError(f"Unsupported file type {value.suffix!r}; expected: {allowed}")
+    return value
+
+
+def safe_stem(value: str, fallback: str = "audio") -> str:
+    cleaned = re.sub(r"[^\w\u4e00-\u9fff-]+", "_", value, flags=re.UNICODE).strip("_")
+    return (cleaned[:48] or fallback)
+
+
+def new_output_path(output_dir: Path, stem: str, suffix: str) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    suffix = suffix.lower().lstrip(".")
+    if suffix not in {"wav", "mp3"}:
+        raise ValueError("output_format must be wav or mp3")
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    return output_dir / f"{safe_stem(stem)}_{timestamp}.{suffix}"
+
+
+def _run(command: list[str], timeout: int = 120) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=timeout,
+    )
+
+
+def convert_audio(
+    source: str | Path,
+    destination: str | Path,
+    ffmpeg: str | Path,
+    *,
+    normalize_loudness: bool = True,
+    sample_rate: int = 48000,
+    timeout: int = 120,
+) -> Path:
+    source = validate_file(source, {".wav", ".mp3", ".flac", ".ogg", ".m4a"})
+    destination = Path(destination).resolve()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    ffmpeg = validate_file(ffmpeg, {".exe"})
+    suffix = destination.suffix.lower()
+    if suffix not in {".wav", ".mp3"}:
+        raise ValueError("destination must end in .wav or .mp3")
+
+    filters = []
+    if normalize_loudness:
+        filters.append("loudnorm=I=-16:TP=-1.5:LRA=10")
+    command = [str(ffmpeg), "-hide_banner", "-loglevel", "error", "-y", "-i", str(source)]
+    if filters:
+        command.extend(["-af", ",".join(filters)])
+    command.extend(["-ar", str(sample_rate)])
+    if suffix == ".wav":
+        command.extend(["-c:a", "pcm_s24le"])
+    else:
+        command.extend(["-codec:a", "libmp3lame", "-b:a", "192k"])
+    command.append(str(destination))
+    _run(command, timeout=timeout)
+    if not destination.is_file() or destination.stat().st_size == 0:
+        raise RuntimeError(f"Audio conversion failed: {destination}")
+    return destination
+
+
+def probe_duration(path: str | Path, ffprobe: str | Path | None = None) -> float:
+    path = validate_file(path)
+    if ffprobe is None:
+        import soundfile as sf
+
+        with sf.SoundFile(str(path)) as handle:
+            return float(len(handle) / handle.samplerate)
+    result = _run(
+        [
+            str(ffprobe),
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            str(path),
+        ]
+    )
+    return float(result.stdout.strip())
+
+
+def concat_wavs(
+    paths: list[Path],
+    pauses_ms: list[int],
+    destination: Path,
+    *,
+    sample_rate: int = 48000,
+) -> Path:
+    import numpy as np
+    import soundfile as sf
+
+    if len(paths) != len(pauses_ms):
+        raise ValueError("paths and pauses_ms must have the same length")
+    chunks = []
+    for index, path in enumerate(paths):
+        audio, sr = sf.read(str(path), dtype="float32")
+        if audio.ndim > 1:
+            audio = audio.mean(axis=1)
+        if sr != sample_rate:
+            raise ValueError(f"Unexpected sample rate {sr} in {path}")
+        chunks.append(audio)
+        if index < len(paths) - 1 and pauses_ms[index] > 0:
+            chunks.append(np.zeros(int(sample_rate * pauses_ms[index] / 1000), dtype=np.float32))
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    sf.write(destination, np.concatenate(chunks), sample_rate, subtype="PCM_24")
+    return destination
+
+
+def vram_free_mb(nvidia_smi: str = "nvidia-smi") -> int | None:
+    try:
+        result = _run(
+            [
+                nvidia_smi,
+                "--query-gpu=memory.free",
+                "--format=csv,noheader,nounits",
+            ],
+            timeout=10,
+        )
+        return int(result.stdout.strip().splitlines()[0])
+    except Exception:
+        return None
+
+
+def http_ready(url: str, timeout: float = 2.0) -> bool:
+    try:
+        with urllib.request.urlopen(f"{url}/config", timeout=timeout):
+            return True
+    except Exception:
+        return False
+
+
+def copy_result(source: str | Path, destination: Path) -> Path:
+    source = validate_file(source)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+    return destination

@@ -1,0 +1,12 @@
+[
+  {
+    "index": "twinkle_target",
+    "language": "Mandarin",
+    "time": [0, 5800],
+    "duration": "0.20 0.35 0.35 0.35 0.35 0.35 0.35 0.50 0.30 0.35 0.35 0.35 0.35 0.35 0.35 0.60",
+    "text": "<SP> 一 闪 一 闪 亮 晶 晶 <SP> 满 天 都 是 小 星 星",
+    "phoneme": "<SP> zh_yi1 zh_shan3 zh_yi1 zh_shan3 zh_liang4 zh_jing1 zh_jing1 <SP> zh_man3 zh_tian1 zh_dou1 zh_shi4 zh_xiao3 zh_xing1 zh_xing1",
+    "note_pitch": "0 60 60 67 67 69 69 67 0 65 65 64 64 62 62 60",
+    "note_type": "1 2 2 2 2 2 2 2 1 2 2 2 2 2 2 2"
+  }
+]
