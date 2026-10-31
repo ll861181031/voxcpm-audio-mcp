@@ -31,6 +31,7 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
+        plugin_data = os.getenv("PLUGIN_DATA")
         return cls(
             voxcpm_home=_path("VOXCPM_HOME", r"D:\Desktop\VoxCPM2"),
             voxcpm_url=os.getenv("VOXCPM_URL", "http://127.0.0.1:8808").rstrip("/"),
@@ -73,12 +74,15 @@ class Settings:
             ),
             output_dir=_path(
                 "AUDIO_OUTPUT_DIR",
-                str(Path.home() / "Music" / "VoxCPM-MCP"),
+                str(Path(plugin_data) / "audio" if plugin_data else Path.home() / "Music" / "VoxCPM-MCP"),
             ),
             log_dir=_path(
                 "MCP_LOG_DIR",
                 str(
-                    Path(os.getenv("LOCALAPPDATA", str(Path.home() / "AppData" / "Local")))
+                    Path(plugin_data)
+                    / "logs"
+                    if plugin_data
+                    else Path(os.getenv("LOCALAPPDATA", str(Path.home() / "AppData" / "Local")))
                     / "OpenAI"
                     / "Codex"
                     / "Plugins"

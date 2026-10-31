@@ -40,6 +40,53 @@ scripts/show_logs.ps1       查看 MCP JSONL 日志
 codex plugin marketplace add ll861181031/voxcpm-audio-mcp
 ```
 
+## 热门 Agent 支持
+
+这个仓库同时提供两套兼容格式：
+
+- 根级 `plugin.json` + `mcp.json`：标准 Agent Plugins 布局
+- `.codex-plugin/plugin.json` + `.mcp.json`：Codex 兼容布局
+
+已适配的 MCP 客户端包括：
+
+| Agent | 状态 |
+|---|---|
+| Codex | 已支持 |
+| Claude Desktop | 已支持 |
+| Claude Code | 已支持 |
+| Cursor | 已支持 |
+| Windsurf | 已支持 |
+| Cline | 已支持 |
+| Continue | 已支持 |
+| VS Code MCP 客户端 | 已支持 |
+| 通用 stdio MCP 客户端 | 已支持 |
+
+可以生成任意客户端可粘贴的标准 `mcpServers` JSON：
+
+```powershell
+.\.venv\Scripts\python.exe .\scripts\generate_agent_config.py --agent cursor
+```
+
+也可以写入文件：
+
+```powershell
+.\.venv\Scripts\python.exe .\scripts\generate_agent_config.py --agent claude-desktop --output claude-desktop.json
+```
+
+详细说明见 [docs/agent-support.md](docs/agent-support.md)。
+
+### Python Agent 框架
+
+仓库还提供三个框架接入示例：
+
+```text
+examples/frameworks/generic_mcp_client.py
+examples/frameworks/openai_agents.py
+examples/frameworks/langchain_mcp.py
+```
+
+分别对应官方 Python MCP SDK、OpenAI Agents SDK 和 LangChain。
+
 ### 常用维护脚本
 
 ```powershell

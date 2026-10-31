@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "voxcpm-audio": {
+      "command": "./scripts/launch_mcp.cmd",
+      "args": [],
+      "env": {
+        "VOXCPM_HOME": "D:\\Desktop\\VoxCPM2",
+        "VOXCPM_URL": "http://127.0.0.1:8808",
+        "SOULX_HOME": "D:\\Desktop\\SoulX-Singer",
+        "SOULX_MODEL_PATH": "D:\\Desktop\\SoulX-Singer\\pretrained_models\\SoulX-Singer\\model.pt",
+        "FFMPEG": "D:\\Desktop\\VoxCPM2\\tools\\ffmpeg\\bin\\ffmpeg.exe",
+        "MIN_FREE_VRAM_MB": "6000",
+        "PYTHONUTF8": "1"
+      }
+    }
+  }
+}

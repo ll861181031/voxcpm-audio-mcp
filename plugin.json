@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "voxcpm-audio-mcp",
+  "version": "0.3.0",
+  "description": "Local speech and singing synthesis MCP server for VoxCPM2 and SoulX-Singer.",
+  "author": {
+    "name": "ll861181031",
+    "url": "https://github.com/ll861181031"
+  },
+  "homepage": "https://github.com/ll861181031/voxcpm-audio-mcp",
+  "repository": "https://github.com/ll861181031/voxcpm-audio-mcp",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "agent-plugins",
+    "tts",
+    "singing",
+    "voxcpm2",
+    "soulx-singer"
+  ]
+}

@@ -2,7 +2,7 @@ param([string]$PluginRoot)
 $ErrorActionPreference = 'Stop'
 
 $plugin = [IO.Path]::GetFullPath($PluginRoot)
-$data = Join-Path $env:LOCALAPPDATA 'OpenAI\Codex\Plugins\voxcpm-audio-mcp'
+$data = if ($env:PLUGIN_DATA) { $env:PLUGIN_DATA } else { Join-Path $env:LOCALAPPDATA 'OpenAI\Codex\Plugins\voxcpm-audio-mcp' }
 $venv = Join-Path $data 'venv'
 $logs = Join-Path $data 'logs'
 New-Item -ItemType Directory -Path $logs -Force | Out-Null

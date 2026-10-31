@@ -1,6 +1,6 @@
 {
   "name": "voxcpm-audio-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Local speech and singing synthesis with VoxCPM2 and SoulX-Singer.",
   "author": {
     "name": "ll861181031",

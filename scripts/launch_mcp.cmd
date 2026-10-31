@@ -2,7 +2,11 @@
 setlocal
 
 set "PLUGIN_ROOT=%~dp0.."
-set "DATA_ROOT=%LOCALAPPDATA%\OpenAI\Codex\Plugins\voxcpm-audio-mcp"
+if defined PLUGIN_DATA (
+    set "DATA_ROOT=%PLUGIN_DATA%"
+) else (
+    set "DATA_ROOT=%LOCALAPPDATA%\OpenAI\Codex\Plugins\voxcpm-audio-mcp"
+)
 set "LOG_DIR=%DATA_ROOT%\logs"
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 

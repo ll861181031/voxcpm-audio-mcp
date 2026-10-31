@@ -1,0 +1,14 @@
+{
+  "servers": {
+    "voxcpm-audio": {
+      "command": "./scripts/launch_mcp.cmd",
+      "args": [],
+      "env": {
+        "VOXCPM_HOME": "D:\\Desktop\\VoxCPM2",
+        "SOULX_HOME": "D:\\Desktop\\SoulX-Singer",
+        "FFMPEG": "D:\\Desktop\\VoxCPM2\\tools\\ffmpeg\\bin\\ffmpeg.exe",
+        "PYTHONUTF8": "1"
+      }
+    }
+  }
+}
