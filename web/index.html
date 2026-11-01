@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoxCPM Audio Debug</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>VoxCPM Audio Debug</h1>
+    <button id="refreshHealth">刷新状态</button>
+  </header>
+  <main>
+    <section class="card">
+      <h2>运行状态</h2>
+      <div id="health" class="kv">正在加载…</div>
+    </section>
+    <section class="card">
+      <h2>语音合成</h2>
+      <form id="speechForm">
+        <label>文本<textarea name="text" required>主人你回来啦，我一直在等你呢。</textarea></label>
+        <label>提示词<textarea name="control_instruction">年轻可爱女声，清亮甜美，亲切自然。</textarea></label>
+        <label>目标 F0<input type="range" name="target_f0" min="150" max="280" step="5" value="215"><output>215 Hz</output></label>
+        <label>语速<input type="range" name="tempo" min="0.85" max="1.20" step="0.01" value="1.00"><output>1.00x</output></label>
+        <label>CFG<input type="range" name="cfg_value" min="1.5" max="3.5" step="0.1" value="2.2"><output>2.2</output></label>
+        <label>采样步数<input type="range" name="inference_timesteps" min="8" max="24" step="1" value="14"><output>14</output></label>
+        <label>参考音频路径<input type="text" name="reference_audio_path" placeholder="可选"></label>
+        <label>输出格式<select name="output_format"><option value="mp3">MP3</option><option value="wav">WAV</option></select></label>
+        <button type="submit" class="primary">合成语音</button>
+      </form>
+      <audio id="speechAudio" controls></audio>
+      <pre id="speechResult">等待合成</pre>
+    </section>
+    <section class="card">
+      <h2>音色预设</h2>
+      <form id="presetForm">
+        <label>预设名<input type="text" name="name" required></label>
+        <label>覆盖同名预设<input type="checkbox" name="overwrite"></label>
+        <button type="submit" class="primary">保存预设</button>
+      </form>
+      <div id="presetList" class="preset-list">正在加载…</div>
+    </section>
+    <section class="card">
+      <h2>歌声合成</h2>
+      <form id="singForm">
+        <label>目标元数据<input type="text" name="target_metadata_path" required placeholder="JSON metadata path"></label>
+        <label>参考音频<input type="text" name="prompt_wav_path"></label>
+        <label>参考元数据<input type="text" name="prompt_metadata_path"></label>
+        <label>设备<select name="device"><option value="auto">auto</option><option value="cuda">cuda</option><option value="cpu">cpu</option></select></label>
+        <label>控制模式<select name="control"><option value="score">score</option><option value="melody">melody</option></select></label>
+        <label>半音偏移<input type="number" name="pitch_shift" value="0" step="1"></label>
+        <label>自动变调<input type="checkbox" name="auto_shift" checked></label>
+        <button type="submit" class="primary">合成歌声</button>
+      </form>
+      <audio id="singAudio" controls></audio>
+      <pre id="singResult">等待合成</pre>
+    </section>
+    <section class="card">
+      <h2>日志</h2>
+      <button id="refreshLogs">刷新日志</button>
+      <pre id="logs">等待加载</pre>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

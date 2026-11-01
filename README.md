@@ -102,6 +102,25 @@ examples/frameworks/langchain_mcp.py
 
 `manage_cache.ps1` 默认只做预览；加 `-Clean` 才会删除超过保留期且超出保留数量的音频文件。
 
+### Web 调试页
+
+启动：
+
+```powershell
+.\scripts\start_debug_web.ps1
+```
+
+默认地址：`http://127.0.0.1:8810`
+
+支持：
+
+- VoxCPM2 语音合成
+- `target_f0`、`tempo`、`cfg_value`、`inference_timesteps`
+- 音色预设保存、选用、删除
+- SoulX-Singer 歌声合成
+- MCP 日志查看
+- 本地模型、FFmpeg 和显存状态
+
 ## 前置条件
 
 - Windows 10/11
