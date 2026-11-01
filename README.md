@@ -6,6 +6,9 @@
 
 - `speak`：用 VoxCPM2 生成普通语音、情感旁白或参考音色克隆。
 - `speak_segments`：把多段文字分别合成，再按设定停顿拼接成完整旁白。
+- `list_voice_presets`：列出已保存音色。
+- `save_voice_preset`：保存目标基频、语速、CFG、步数、提示词和参考音频。
+- `delete_voice_preset`：删除音色预设。
 - `sing_metadata`：用 SoulX-Singer 读取目标元数据并生成歌声。
 - `sing_notes`：直接输入音素、MIDI 音高和每字时长生成歌声。
 - `health`：检查模型路径、FFmpeg、VoxCPM2 服务和 GPU 显存。
@@ -179,6 +182,25 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\run.ps1
   "output_format": "mp3"
 }
 ```
+
+`speak` 现在还支持类似“大肥鱼管理台”的数值调音参数：
+
+```json
+{
+  "text": "主人你回来啦，我一直在等你呢。",
+  "voice_preset": "cute-female",
+  "target_f0": 260,
+  "tempo": 1.05,
+  "cfg_value": 2.3,
+  "inference_timesteps": 16
+}
+```
+
+- `target_f0`：目标基频，单位 Hz。
+- `tempo`：语速倍率，大于 1 更快，小于 1 更慢。
+- `cfg_value`：提示词权重。
+- `inference_timesteps`：采样步数。
+- `voice_preset`：已保存音色预设名。
 
 ### 分段情感旁白
 

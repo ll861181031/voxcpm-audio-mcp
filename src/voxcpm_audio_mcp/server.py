@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from .audio import append_log, vram_info
 from .backends import AudioBackendError, SoulXSingerBackend, VoxCPMBackend
 from .config import Settings
+from .presets import VoicePresetStore
 
 
 class SpeakSegment(BaseModel):
@@ -21,6 +22,7 @@ class SpeakSegment(BaseModel):
 settings = Settings.from_env()
 speech = VoxCPMBackend(settings)
 singing = SoulXSingerBackend(settings)
+voice_presets = VoicePresetStore(settings.voice_presets_path)
 
 mcp = MCPServer("VoxCPM Audio")
 
@@ -37,36 +39,83 @@ def logged_call(name: str, payload: dict):
         append_log(settings.log_dir, f"{name}.finish", payload)
 
 
+def resolve_speech_preset(
+    *,
+    voice_preset: str | None,
+    control_instruction: str | None,
+    reference_audio_path: str | None,
+    cfg_value: float | None,
+    inference_timesteps: int | None,
+    target_f0: float | None,
+    tempo: float | None,
+    default_cfg_value: float = 2.2,
+    default_inference_timesteps: int = 14,
+) -> dict:
+    preset = voice_presets.get(voice_preset) if voice_preset else {}
+    return {
+        "control_instruction": control_instruction
+        or preset.get("control_instruction")
+        or "自然、清晰、亲切的普通话，语速适中，情绪真实。",
+        "reference_audio_path": reference_audio_path
+        or preset.get("reference_audio_path"),
+        "cfg_value": cfg_value if cfg_value is not None else preset.get("cfg_value", default_cfg_value),
+        "inference_timesteps": inference_timesteps
+        if inference_timesteps is not None
+        else preset.get("inference_timesteps", default_inference_timesteps),
+        "target_f0": target_f0 if target_f0 is not None else preset.get("target_f0"),
+        "tempo": tempo if tempo is not None else preset.get("tempo", 1.0),
+    }
+
+
 @mcp.tool(
     description="用本地 VoxCPM2 生成说话或情感旁白。返回音频文件路径。",
 )
 def speak(
     text: str,
-    control_instruction: str = "自然、清晰、亲切的普通话，语速适中，情绪真实。",
+    control_instruction: str | None = None,
     reference_audio_path: str | None = None,
-    cfg_value: float = 2.2,
-    inference_timesteps: int = 14,
+    cfg_value: float | None = None,
+    inference_timesteps: int | None = None,
+    voice_preset: str | None = None,
+    target_f0: float | None = None,
+    tempo: float | None = None,
     seed: int | None = None,
     output_format: Literal["wav", "mp3"] = "mp3",
     normalize_loudness: bool = True,
 ) -> dict:
     """Generate speech with VoxCPM2."""
     try:
+        resolved = resolve_speech_preset(
+            voice_preset=voice_preset,
+            control_instruction=control_instruction,
+            reference_audio_path=reference_audio_path,
+            cfg_value=cfg_value,
+            inference_timesteps=inference_timesteps,
+            target_f0=target_f0,
+            tempo=tempo,
+            default_cfg_value=2.3,
+            default_inference_timesteps=16,
+        )
         with logged_call(
             "speak",
             {
                 "text_chars": len(text),
-                "cfg_value": cfg_value,
-                "inference_timesteps": inference_timesteps,
+                "voice_preset": voice_preset,
+                "cfg_value": resolved["cfg_value"],
+                "inference_timesteps": resolved["inference_timesteps"],
+                "target_f0": resolved["target_f0"],
+                "tempo": resolved["tempo"],
                 "output_format": output_format,
             },
         ):
             return speech.speak(
                 text=text,
-                control_instruction=control_instruction,
-                reference_audio_path=reference_audio_path,
-                cfg_value=cfg_value,
-                inference_timesteps=inference_timesteps,
+                control_instruction=resolved["control_instruction"],
+                reference_audio_path=resolved["reference_audio_path"],
+                cfg_value=resolved["cfg_value"],
+                inference_timesteps=resolved["inference_timesteps"],
+                target_f0=resolved["target_f0"],
+                tempo=resolved["tempo"],
                 seed=seed,
                 output_format=output_format,
                 normalize_loudness=normalize_loudness,
@@ -81,34 +130,96 @@ def speak(
 def speak_segments(
     segments: list[SpeakSegment],
     reference_audio_path: str | None = None,
-    cfg_value: float = 2.3,
-    inference_timesteps: int = 16,
+    cfg_value: float | None = None,
+    inference_timesteps: int | None = None,
+    voice_preset: str | None = None,
+    target_f0: float | None = None,
+    tempo: float | None = None,
     seed: int | None = None,
     output_format: Literal["wav", "mp3"] = "mp3",
     normalize_loudness: bool = True,
 ) -> dict:
     """Generate segmented emotional narration with VoxCPM2."""
     try:
+        resolved = resolve_speech_preset(
+            voice_preset=voice_preset,
+            control_instruction=None,
+            reference_audio_path=reference_audio_path,
+            cfg_value=cfg_value,
+            inference_timesteps=inference_timesteps,
+            target_f0=target_f0,
+            tempo=tempo,
+        )
         with logged_call(
             "speak_segments",
             {
                 "segments": len(segments),
-                "cfg_value": cfg_value,
-                "inference_timesteps": inference_timesteps,
+                "voice_preset": voice_preset,
+                "cfg_value": resolved["cfg_value"],
+                "inference_timesteps": resolved["inference_timesteps"],
+                "target_f0": resolved["target_f0"],
+                "tempo": resolved["tempo"],
                 "output_format": output_format,
             },
         ):
             return speech.speak_segments(
                 segments=[segment.model_dump() for segment in segments],
-                reference_audio_path=reference_audio_path,
-                cfg_value=cfg_value,
-                inference_timesteps=inference_timesteps,
+                reference_audio_path=resolved["reference_audio_path"],
+                cfg_value=resolved["cfg_value"],
+                inference_timesteps=resolved["inference_timesteps"],
+                target_f0=resolved["target_f0"],
+                tempo=resolved["tempo"],
                 seed=seed,
                 output_format=output_format,
                 normalize_loudness=normalize_loudness,
             )
     except (AudioBackendError, FileNotFoundError, ValueError) as exc:
         raise RuntimeError(str(exc)) from exc
+
+
+@mcp.tool(
+    description="列出已保存的 VoxCPM2 音色预设。",
+)
+def list_voice_presets() -> dict:
+    """List saved voice presets."""
+    return {"presets": voice_presets.list()}
+
+
+@mcp.tool(
+    description="保存一组 VoxCPM2 音色参数，可包含目标基频、语速、CFG、采样步数、提示词和参考音频。",
+)
+def save_voice_preset(
+    name: str,
+    target_f0: float | None = None,
+    tempo: float | None = None,
+    cfg_value: float | None = None,
+    inference_timesteps: int | None = None,
+    control_instruction: str | None = None,
+    reference_audio_path: str | None = None,
+    overwrite: bool = False,
+) -> dict:
+    """Save a reusable VoxCPM2 voice preset."""
+    preset = {
+        key: value
+        for key, value in {
+            "target_f0": target_f0,
+            "tempo": tempo,
+            "cfg_value": cfg_value,
+            "inference_timesteps": inference_timesteps,
+            "control_instruction": control_instruction,
+            "reference_audio_path": reference_audio_path,
+        }.items()
+        if value is not None
+    }
+    return voice_presets.save(name, preset, overwrite=overwrite)
+
+
+@mcp.tool(
+    description="删除一个已保存的 VoxCPM2 音色预设。",
+)
+def delete_voice_preset(name: str) -> dict:
+    """Delete a saved voice preset."""
+    return voice_presets.delete(name)
 
 
 @mcp.tool(

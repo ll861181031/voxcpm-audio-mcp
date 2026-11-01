@@ -12,6 +12,7 @@ Use this skill when the user asks to synthesize speech, clone a local voice, cre
 - Use `health` before long jobs to check model paths, FFmpeg, VoxCPM2 readiness, and free VRAM.
 - Use `speak` for one sentence or one paragraph.
 - Use `speak_segments` for multi-paragraph narration where each paragraph needs a different emotion or pause.
+- Use `save_voice_preset` when the user wants to keep a reusable voice.
 - Use `sing_metadata` when a SoulX-Singer metadata JSON already exists.
 - Use `sing_notes` when the user provides phonemes, MIDI note numbers, and durations.
 
@@ -23,6 +24,8 @@ Use this skill when the user asks to synthesize speech, clone a local voice, cre
 4. Prefer `cfg_value` around `2.2` for normal speech and `2.3` to `2.5` for stronger emotion.
 5. Use `inference_timesteps` around `14` for speech and `16` to `20` for expressive narration.
 6. Do not clone a voice unless the user owns it or has explicit permission.
+7. For numeric voice control, use `target_f0`, `tempo`, `cfg_value`, and `inference_timesteps`.
+8. Save successful numeric settings with `save_voice_preset` before long sessions.
 
 ## Singing guidance
 

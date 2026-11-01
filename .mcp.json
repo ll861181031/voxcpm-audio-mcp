@@ -29,6 +29,7 @@
         "FFMPEG",
         "AUDIO_OUTPUT_DIR",
         "MCP_LOG_DIR",
+        "VOICE_PRESETS_PATH",
         "MIN_FREE_VRAM_MB",
         "REQUEST_TIMEOUT_S",
         "MAX_TEXT_CHARS"

@@ -9,6 +9,7 @@ import tempfile
 import time
 import urllib.request
 from pathlib import Path
+import math
 
 
 def validate_file(path: str | Path, suffixes: set[str] | None = None) -> Path:
@@ -129,6 +130,78 @@ def concat_wavs(
     destination.parent.mkdir(parents=True, exist_ok=True)
     sf.write(destination, np.concatenate(chunks), sample_rate, subtype="PCM_24")
     return destination
+
+
+def estimate_f0(audio, sample_rate: int) -> float | None:
+    import librosa
+    import numpy as np
+
+    if audio.ndim > 1:
+        audio = audio.mean(axis=1)
+    f0, voiced_flags, _ = librosa.pyin(
+        audio,
+        fmin=60,
+        fmax=500,
+        sr=sample_rate,
+        frame_length=2048,
+        hop_length=512,
+    )
+    voiced = f0[np.isfinite(f0) & voiced_flags]
+    if voiced.size == 0:
+        return None
+    return float(np.median(voiced))
+
+
+def shape_voice(
+    source: str | Path,
+    destination: str | Path,
+    *,
+    target_f0: float | None = None,
+    tempo: float = 1.0,
+) -> dict:
+    import librosa
+    import numpy as np
+    import soundfile as sf
+
+    if target_f0 is not None and not 50 <= target_f0 <= 500:
+        raise ValueError("target_f0 must be between 50 and 500 Hz")
+    if not 0.5 <= tempo <= 2.0:
+        raise ValueError("tempo must be between 0.5 and 2.0")
+
+    source_path = validate_file(source, {".wav", ".mp3", ".flac", ".ogg", ".m4a"})
+    destination_path = Path(destination).resolve()
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+
+    audio, sample_rate = sf.read(str(source_path), dtype="float32")
+    if audio.ndim > 1:
+        audio = audio.mean(axis=1)
+    if audio.size == 0:
+        raise ValueError("audio is empty")
+
+    measured_f0 = estimate_f0(audio, sample_rate)
+    pitch_shift_semitones = None
+    if target_f0 is not None:
+        if measured_f0 is None:
+            raise ValueError("could not estimate source F0")
+        pitch_shift_semitones = 12 * math.log2(target_f0 / measured_f0)
+        audio = librosa.effects.pitch_shift(
+            y=audio,
+            sr=sample_rate,
+            n_steps=pitch_shift_semitones,
+        )
+
+    if tempo != 1.0:
+        audio = librosa.effects.time_stretch(y=audio, rate=tempo)
+
+    sf.write(destination_path, audio, sample_rate, subtype="PCM_24")
+    return {
+        "measured_f0": measured_f0,
+        "target_f0": target_f0,
+        "pitch_shift_semitones": pitch_shift_semitones,
+        "tempo": tempo,
+        "sample_rate": sample_rate,
+        "duration_seconds": round(len(audio) / sample_rate, 3),
+    }
 
 
 def vram_free_mb(nvidia_smi: str = "nvidia-smi") -> int | None:

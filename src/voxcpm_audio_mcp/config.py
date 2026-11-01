@@ -25,6 +25,7 @@ class Settings:
     ffmpeg: Path
     output_dir: Path
     log_dir: Path
+    voice_presets_path: Path
     min_free_vram_mb: int
     request_timeout_s: int
     max_text_chars: int
@@ -88,6 +89,14 @@ class Settings:
                     / "Plugins"
                     / "voxcpm-audio-mcp"
                     / "logs"
+                ),
+            ),
+            voice_presets_path=_path(
+                "VOICE_PRESETS_PATH",
+                str(
+                    Path(plugin_data) / "voice_presets.json"
+                    if plugin_data
+                    else Path.home() / ".voxcpm_audio_mcp" / "voice_presets.json"
                 ),
             ),
             min_free_vram_mb=int(os.getenv("MIN_FREE_VRAM_MB", "6000")),

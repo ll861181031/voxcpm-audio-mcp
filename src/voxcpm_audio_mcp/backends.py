@@ -17,6 +17,7 @@ from .audio import (
     new_output_path,
     probe_duration,
     safe_stem,
+    shape_voice,
     validate_file,
     vram_free_mb,
 )
@@ -78,6 +79,8 @@ class VoxCPMBackend:
         reference_audio_path: str | None = None,
         cfg_value: float = 2.2,
         inference_timesteps: int = 14,
+        target_f0: float | None = None,
+        tempo: float | None = None,
         seed: int | None = None,
         output_format: Literal["wav", "mp3"] = "mp3",
         normalize_loudness: bool = True,
@@ -91,6 +94,11 @@ class VoxCPMBackend:
             raise ValueError("cfg_value must be between 0.1 and 10.0")
         if not 1 <= inference_timesteps <= 100:
             raise ValueError("inference_timesteps must be between 1 and 100")
+        actual_tempo = 1.0 if tempo is None else float(tempo)
+        if not 0.5 <= actual_tempo <= 2.0:
+            raise ValueError("tempo must be between 0.5 and 2.0")
+        if target_f0 is not None and not 50 <= target_f0 <= 500:
+            raise ValueError("target_f0 must be between 50 and 500 Hz")
         self.ensure_server()
         from gradio_client import Client, handle_file
 
@@ -112,6 +120,19 @@ class VoxCPMBackend:
                 api_name="/generate",
             )
             raw = Path(result[0])
+            voice_info = {
+                "target_f0": target_f0,
+                "tempo": actual_tempo,
+            }
+            if target_f0 is not None or actual_tempo != 1.0:
+                shaped = Path(temp) / "shaped.wav"
+                voice_info = shape_voice(
+                    raw,
+                    shaped,
+                    target_f0=target_f0,
+                    tempo=actual_tempo,
+                )
+                raw = shaped
             destination = new_output_path(self.settings.output_dir, text, output_format)
             final = convert_audio(
                 raw,
@@ -127,6 +148,7 @@ class VoxCPMBackend:
                 "sample_rate": 48000,
                 "seed": actual_seed,
                 "text": text,
+                "voice": voice_info,
             }
 
     def speak_segments(
@@ -136,6 +158,8 @@ class VoxCPMBackend:
         reference_audio_path: str | None = None,
         cfg_value: float = 2.3,
         inference_timesteps: int = 16,
+        target_f0: float | None = None,
+        tempo: float | None = None,
         seed: int | None = None,
         output_format: Literal["wav", "mp3"] = "mp3",
         normalize_loudness: bool = True,
@@ -160,6 +184,8 @@ class VoxCPMBackend:
                     reference_audio_path=reference_audio_path,
                     cfg_value=cfg_value,
                     inference_timesteps=inference_timesteps,
+                    target_f0=target_f0,
+                    tempo=tempo,
                     seed=(seed + index * 1009) if seed is not None else None,
                     output_format="wav",
                     normalize_loudness=False,
@@ -185,6 +211,10 @@ class VoxCPMBackend:
                 "path": str(final),
                 "duration_seconds": round(probe_duration(final), 3),
                 "segments": len(segments),
+                "voice": {
+                    "target_f0": target_f0,
+                    "tempo": 1.0 if tempo is None else tempo,
+                },
             }
 
 
