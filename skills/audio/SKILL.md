@@ -21,11 +21,12 @@ Use this skill when the user asks to synthesize speech, clone a local voice, cre
 1. Keep `control_instruction` specific but not contradictory.
 2. Include voice age, gender, timbre, emotion, pacing, volume, and pronunciation emphasis.
 3. For emotional narration, split by meaning and use `speak_segments`.
-4. Prefer `cfg_value` around `2.2` for normal speech and `2.3` to `2.5` for stronger emotion.
-5. Use `inference_timesteps` around `14` for speech and `16` to `20` for expressive narration.
-6. Do not clone a voice unless the user owns it or has explicit permission.
-7. For numeric voice control, use `target_f0`, `tempo`, `cfg_value`, and `inference_timesteps`.
-8. Save successful numeric settings with `save_voice_preset` before long sessions.
+4. Default numeric tuning is `target_f0=260`, `tempo=1.05`, `cfg_value=2.3`, and `inference_timesteps=16`.
+5. Prefer `cfg_value` around `2.2` for normal speech and `2.3` to `2.5` for stronger emotion.
+6. Use `inference_timesteps` around `14` for speech and `16` to `20` for expressive narration.
+7. Do not clone a voice unless the user owns it or has explicit permission.
+8. For numeric voice control, use `target_f0`, `tempo`, `cfg_value`, and `inference_timesteps`.
+9. Save successful numeric settings with `save_voice_preset` before long sessions.
 
 ## Singing guidance
 

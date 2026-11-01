@@ -196,8 +196,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\run.ps1
 {
   "text": "你好呀，今天也要开开心心的哦。",
   "control_instruction": "年轻可爱女声，清亮甜美，亲切自然，带一点笑意。",
-  "cfg_value": 2.2,
-  "inference_timesteps": 14,
+  "cfg_value": 2.3,
+  "inference_timesteps": 16,
   "output_format": "mp3"
 }
 ```
@@ -219,6 +219,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\run.ps1
 - `tempo`：语速倍率，大于 1 更快，小于 1 更慢。
 - `cfg_value`：提示词权重。
 - `inference_timesteps`：采样步数。
+- 默认调音参数为 `target_f0=260`、`tempo=1.05`、`cfg_value=2.3`、`inference_timesteps=16`。
 - `voice_preset`：已保存音色预设名。
 
 ### 分段情感旁白

@@ -26,6 +26,11 @@ voice_presets = VoicePresetStore(settings.voice_presets_path)
 
 mcp = MCPServer("VoxCPM Audio")
 
+DEFAULT_TARGET_F0 = 260.0
+DEFAULT_TEMPO = 1.05
+DEFAULT_CFG_VALUE = 2.3
+DEFAULT_INFERENCE_TIMESTEPS = 16
+
 
 @contextmanager
 def logged_call(name: str, payload: dict):
@@ -48,8 +53,10 @@ def resolve_speech_preset(
     inference_timesteps: int | None,
     target_f0: float | None,
     tempo: float | None,
-    default_cfg_value: float = 2.2,
-    default_inference_timesteps: int = 14,
+    default_cfg_value: float = DEFAULT_CFG_VALUE,
+    default_inference_timesteps: int = DEFAULT_INFERENCE_TIMESTEPS,
+    default_target_f0: float = DEFAULT_TARGET_F0,
+    default_tempo: float = DEFAULT_TEMPO,
 ) -> dict:
     preset = voice_presets.get(voice_preset) if voice_preset else {}
     return {
@@ -62,8 +69,8 @@ def resolve_speech_preset(
         "inference_timesteps": inference_timesteps
         if inference_timesteps is not None
         else preset.get("inference_timesteps", default_inference_timesteps),
-        "target_f0": target_f0 if target_f0 is not None else preset.get("target_f0"),
-        "tempo": tempo if tempo is not None else preset.get("tempo", 1.0),
+        "target_f0": target_f0 if target_f0 is not None else preset.get("target_f0", default_target_f0),
+        "tempo": tempo if tempo is not None else preset.get("tempo", default_tempo),
     }
 
 
@@ -93,8 +100,6 @@ def speak(
             inference_timesteps=inference_timesteps,
             target_f0=target_f0,
             tempo=tempo,
-            default_cfg_value=2.3,
-            default_inference_timesteps=16,
         )
         with logged_call(
             "speak",

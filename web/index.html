@@ -22,10 +22,10 @@
       <form id="speechForm">
         <label>文本<textarea name="text" required>主人你回来啦，我一直在等你呢。</textarea></label>
         <label>提示词<textarea name="control_instruction">年轻可爱女声，清亮甜美，亲切自然。</textarea></label>
-        <label>目标 F0<input type="range" name="target_f0" min="150" max="280" step="5" value="215"><output>215 Hz</output></label>
-        <label>语速<input type="range" name="tempo" min="0.85" max="1.20" step="0.01" value="1.00"><output>1.00x</output></label>
-        <label>CFG<input type="range" name="cfg_value" min="1.5" max="3.5" step="0.1" value="2.2"><output>2.2</output></label>
-        <label>采样步数<input type="range" name="inference_timesteps" min="8" max="24" step="1" value="14"><output>14</output></label>
+        <label>目标 F0<input type="range" name="target_f0" min="150" max="280" step="5" value="260"><output>260 Hz</output></label>
+        <label>语速<input type="range" name="tempo" min="0.85" max="1.20" step="0.01" value="1.05"><output>1.05x</output></label>
+        <label>CFG<input type="range" name="cfg_value" min="1.5" max="3.5" step="0.1" value="2.3"><output>2.3</output></label>
+        <label>采样步数<input type="range" name="inference_timesteps" min="8" max="24" step="1" value="16"><output>16</output></label>
         <label>参考音频路径<input type="text" name="reference_audio_path" placeholder="可选"></label>
         <label>输出格式<select name="output_format"><option value="mp3">MP3</option><option value="wav">WAV</option></select></label>
         <button type="submit" class="primary">合成语音</button>

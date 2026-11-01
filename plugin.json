@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "voxcpm-audio-mcp",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Local speech and singing synthesis MCP server for VoxCPM2 and SoulX-Singer.",
   "author": {
     "name": "ll861181031",

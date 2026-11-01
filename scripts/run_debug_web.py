@@ -31,7 +31,7 @@ def audio_url(path: str) -> str:
 
 
 class DebugRequestHandler(BaseHTTPRequestHandler):
-    server_version = "VoxCPMDebugWeb/0.5.0"
+    server_version = "VoxCPMDebugWeb/0.5.1"
 
     def log_message(self, format: str, *args) -> None:
         sys.stdout.write(f"{self.address_string()} - {format % args}\n")
@@ -146,10 +146,10 @@ class DebugRequestHandler(BaseHTTPRequestHandler):
                         text=body["text"],
                         control_instruction=body.get("control_instruction", ""),
                         reference_audio_path=body.get("reference_audio_path"),
-                        cfg_value=float(body.get("cfg_value", 2.2)),
-                        inference_timesteps=int(body.get("inference_timesteps", 14)),
-                        target_f0=body.get("target_f0"),
-                        tempo=body.get("tempo"),
+                        cfg_value=float(body.get("cfg_value", 2.3)),
+                        inference_timesteps=int(body.get("inference_timesteps", 16)),
+                        target_f0=body.get("target_f0", 260),
+                        tempo=body.get("tempo", 1.05),
                         seed=body.get("seed"),
                         output_format=body.get("output_format", "mp3"),
                         normalize_loudness=bool(body.get("normalize_loudness", True)),
