@@ -1,5 +1,8 @@
 # Framework examples
 
+> 工作区级部署与飞牛唱歌链路见
+> `C:\Users\lsr\Documents\Codex\2026-09-16\yan\README.md`。
+
 These examples show how to connect popular Python agent frameworks to the local VoxCPM Audio stdio MCP server.
 
 - `generic_mcp_client.py`: uses the official Python MCP SDK.

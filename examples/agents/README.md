@@ -1,5 +1,8 @@
 # Agent config examples
 
+> 工作区级部署与飞牛唱歌链路见
+> `C:\Users\lsr\Documents\Codex\2026-09-16\yan\README.md`。
+
 All examples use the same standard `mcpServers` shape.
 
 For an absolute path on your machine, run:

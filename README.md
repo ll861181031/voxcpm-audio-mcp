@@ -1,5 +1,8 @@
 # VoxCPM Audio MCP
 
+> 本工作区的部署、飞牛 QQBot 和唱歌服务总览见
+> `C:\Users\lsr\Documents\Codex\2026-09-16\yan\README.md`。
+
 本地语音与歌声合成 MCP 服务，把已经安装好的 **VoxCPM2** 和 **SoulX-Singer** 暴露给支持 MCP 的客户端。
 
 ## 功能

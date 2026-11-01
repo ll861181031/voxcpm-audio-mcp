@@ -1,5 +1,8 @@
 # Agent support
 
+> 工作区级部署与飞牛唱歌链路见
+> `C:\Users\lsr\Documents\Codex\2026-09-16\yan\README.md`。
+
 VoxCPM Audio uses a standard stdio MCP server, so it works with any MCP client that can launch a local command.
 
 ## Supported clients

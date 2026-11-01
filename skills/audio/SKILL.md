@@ -5,6 +5,9 @@ description: Generate local speech, emotional narration, and exact-melody singin
 
 # VoxCPM Audio
 
+> 工作区级部署与飞牛唱歌链路见
+> `C:\Users\lsr\Documents\Codex\2026-09-16\yan\README.md`。
+
 Use this skill when the user asks to synthesize speech, clone a local voice, create emotional narration, or generate singing with controlled notes.
 
 ## Tool choice
